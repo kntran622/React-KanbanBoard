@@ -1,8 +1,8 @@
-import { useSortable } from "@dnd-kit/sortable"
+import { SortableContext, useSortable } from "@dnd-kit/sortable"
 import Trashicon from "../icons/Trashicon"
 import { Column, Id, Task } from "../types"
 import { CSS } from "@dnd-kit/utilities"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import Plusicon from "../icons/Plusicon"
 import TaskCard from "./TaskCard"
 
@@ -12,13 +12,27 @@ interface Props {
   updateColumn: (id: Id, title: string) => void
 
   createTask: (columnId: Id) => void
+  updateTask: (id: Id, content: string) => void
+  deleteTask: (id: Id) => void
   tasks: Task[]
 }
 
 function ColumnContainer(props: Props) {
-  const { column, deleteColumn, updateColumn, createTask, tasks } = props
+  const {
+    column,
+    deleteColumn,
+    updateColumn,
+    createTask,
+    updateTask,
+    deleteTask,
+    tasks,
+  } = props
 
   const [editMode, setEditMode] = useState(false)
+
+  const tasksIds = useMemo(() => {
+    return tasks.map((task) => task.id)
+  }, [tasks])
 
   const {
     setNodeRef,
@@ -142,9 +156,16 @@ function ColumnContainer(props: Props) {
       </div>
 
       <div className="flex flex-grow flex-col gap-4 p-2 overflow-x-hidden overflow-y-hidden">
-        {tasks.map((task) => (
-          <TaskCard key={task.id} task={task} />
-        ))}
+        <SortableContext items={tasksIds}>
+          {tasks.map((task) => (
+            <TaskCard
+              key={task.id}
+              task={task}
+              deleteTask={deleteTask}
+              updateTask={updateTask}
+            />
+          ))}
+        </SortableContext>
       </div>
 
       <div
